@@ -136,13 +136,17 @@ public abstract class NagatoQuery {
 	}
 
 	public static class StdConsole extends AbstractConsole {
-		public StdConsole(Executor aExecutor) {
+		public String mInputPrefix;
+
+		public StdConsole(String aInputPrefix, Executor aExecutor) {
 			super(aExecutor);
+			mInputPrefix = aInputPrefix;
 		}
 
 		@Override
 		public String readLine() {
-			System.console().writer().write("YUKI.N]> ");
+			if (mInputPrefix != null)
+				System.console().writer().write(mInputPrefix);
 			System.console().writer().flush();
 			return System.console().readLine();
 		}
@@ -161,7 +165,7 @@ public abstract class NagatoQuery {
 	}
 
 	public static void main(String[] argv) {
-		StdConsole sc = new StdConsole(Executors.newFixedThreadPool(5));
+		StdConsole sc = new StdConsole("YUKI.N> ", Executors.newFixedThreadPool(5));
 		sc.loadClass(UtilCommand.class);
 		sc.start();
 	}
