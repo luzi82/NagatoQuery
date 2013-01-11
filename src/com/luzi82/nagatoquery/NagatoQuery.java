@@ -1,4 +1,4 @@
-package com.luzi82.YUKI.N;
+package com.luzi82.nagatoquery;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -142,12 +142,15 @@ public abstract class NagatoQuery {
 
 		@Override
 		public String readLine() {
+			System.console().writer().write("YUKI.N]> ");
+			System.console().writer().flush();
 			return System.console().readLine();
 		}
 
 		@Override
 		public void trace(String aMessage) {
 			System.console().writer().println(aMessage);
+			System.console().writer().flush();
 		}
 
 		@Override

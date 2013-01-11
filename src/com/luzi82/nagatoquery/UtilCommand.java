@@ -1,4 +1,4 @@
-package com.luzi82.YUKI.N;
+package com.luzi82.nagatoquery;
 
 public class UtilCommand {
 
