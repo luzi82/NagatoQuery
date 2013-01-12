@@ -13,10 +13,6 @@ public class NagatoQueryTest {
 		aListener.commandReturn("Hello World");
 	}
 
-	public static void cmd_func3(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, boolean aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
-	}
-
 	public static class TestNq extends NagatoQuery implements NagatoQuery.CommandListener {
 		public LinkedList<String> mTraceRecord = new LinkedList<String>();
 		public LinkedList<String> mCommnadReturnRecord = new LinkedList<String>();
@@ -175,6 +171,62 @@ public class NagatoQueryTest {
 		Assert.assertEquals(1, nq.mTraceRecord.size());
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("command not found", nq.mTraceRecord.get(0));
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testArgNumError() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+
+		nq.execute("func_string", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mTraceRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("func_string arg: [String]", nq.mTraceRecord.get(0));
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+
+		nq.clear();
+
+		nq.execute("func_string a b", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mTraceRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("func_string arg: [String]", nq.mTraceRecord.get(0));
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testRunnable() {
+		TestNq nq = new TestNq();
+		final int[] x = { 0 };
+		nq.mCommandTree.put("run", new Runnable() {
+			@Override
+			public void run() {
+				x[0] = 1;
+			}
+		});
+		nq.execute("run", nq);
+		sleep(100);
+		Assert.assertEquals(0, nq.mTraceRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, x[0]);
+	}
+
+	@Test
+	public void testRunnableArg() {
+		TestNq nq = new TestNq();
+		nq.mCommandTree.put("run", new Runnable() {
+			@Override
+			public void run() {
+			}
+		});
+		nq.execute("run x", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mTraceRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("run arg: []", nq.mTraceRecord.get(0));
 		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
 	}
 

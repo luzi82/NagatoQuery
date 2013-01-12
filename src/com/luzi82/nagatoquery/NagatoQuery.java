@@ -1,6 +1,5 @@
 package com.luzi82.nagatoquery;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Map;
@@ -15,14 +14,14 @@ public abstract class NagatoQuery {
 
 	public final Map<String, String> mVarTree;
 	public final Map<String, String> mTmpVarTree;
-	public final Map<String, Method> mCommandTree;
+	public final Map<String, Object> mCommandTree;
 
 	public final Executor mExecutor;
 
 	public NagatoQuery(Executor aExecutor) {
 		mVarTree = new TreeMap<String, String>();
 		mTmpVarTree = new TreeMap<String, String>();
-		mCommandTree = new TreeMap<String, Method>();
+		mCommandTree = new TreeMap<String, Object>();
 		mExecutor = aExecutor;
 	}
 
@@ -54,30 +53,62 @@ public abstract class NagatoQuery {
 	}
 
 	public void execute(String[] aCommandToken, final CommandListener aListener) {
-		final Method method = mCommandTree.get(aCommandToken[0]);
-		if (method == null) {
+		String cmdName = aCommandToken[0];
+		Object cmdObject = mCommandTree.get(cmdName);
+		if (cmdObject == null) {
 			trace("command not found");
 			aListener.commandReturn(null);
 			return;
 		}
-		Class<?>[] argTypeV = method.getParameterTypes();
-		final Object[] argv = new Object[aCommandToken.length + 1];
-		argv[0] = this;
-		argv[1] = aListener;
-		for (int i = 2; i < argTypeV.length; ++i) {
-			argv[i] = convert(aCommandToken[i - 1], argTypeV[i]);
-		}
-		mExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					method.invoke(null, argv);
-				} catch (Throwable t) {
-					t.printStackTrace();
+		if (cmdObject instanceof Method) {
+			final Method method = (Method) cmdObject;
+			Class<?>[] argTypeV = method.getParameterTypes();
+			if (aCommandToken.length + 1 != argTypeV.length) {
+				StringBuffer sb = new StringBuffer();
+				sb.append(cmdName);
+				sb.append(" arg: [");
+				for (int i = 2; i < argTypeV.length; ++i) {
+					if (i != 2)
+						sb.append(",");
+					sb.append(argTypeV[i].getSimpleName());
+				}
+				sb.append("]");
+				trace(sb.toString());
+				aListener.commandReturn(null);
+				return;
+			}
+			final Object[] argv = new Object[aCommandToken.length + 1];
+			argv[0] = this;
+			argv[1] = aListener;
+			for (int i = 2; i < argTypeV.length; ++i) {
+				argv[i] = convert(aCommandToken[i - 1], argTypeV[i]);
+			}
+			mExecutor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						method.invoke(null, argv);
+					} catch (Throwable t) {
+						t.printStackTrace();
+						aListener.commandReturn(null);
+					}
+				}
+			});
+		} else if (cmdObject instanceof Runnable) {
+			final Runnable cmdRun = (Runnable) cmdObject;
+			if (aCommandToken.length != 1) {
+				trace(cmdName + " arg: []");
+				aListener.commandReturn(null);
+				return;
+			}
+			mExecutor.execute(new Runnable() {
+				@Override
+				public void run() {
+					cmdRun.run();
 					aListener.commandReturn(null);
 				}
-			}
-		});
+			});
+		}
 	}
 
 	public static Object convert(String aFrom, Class<?> aTo) {
