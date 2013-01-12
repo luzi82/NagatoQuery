@@ -33,11 +33,10 @@ public abstract class NagatoQuery {
 		Method[] mv = aClass.getMethods();
 		for (Method m : mv) {
 			String name = m.getName();
-			if (!name.startsWith(CMD_PREFIX)) {
-				continue;
+			if (name.startsWith(CMD_PREFIX)) {
+				name = name.substring(CMD_PREFIX.length());
+				mCommandTree.put(name, m);
 			}
-			name = name.substring(CMD_PREFIX.length());
-			mCommandTree.put(name, m);
 		}
 	}
 
@@ -105,6 +104,8 @@ public abstract class NagatoQuery {
 		}
 	}
 
+	public abstract void trace(String aMessage);
+
 	public abstract void onExit();
 
 	public static abstract class AbstractConsole extends NagatoQuery implements Runnable {
@@ -131,8 +132,6 @@ public abstract class NagatoQuery {
 		}
 
 		public abstract String readLine();
-
-		public abstract void trace(String aMessage);
 	}
 
 	public static class StdConsole extends AbstractConsole {
