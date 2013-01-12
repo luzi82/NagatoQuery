@@ -1,6 +1,7 @@
 package com.luzi82.nagatoquery;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -55,6 +56,7 @@ public abstract class NagatoQuery {
 	public void execute(String[] aCommandToken, final CommandListener aListener) {
 		String cmdName = aCommandToken[0];
 		Object cmdObject = mCommandTree.get(cmdName);
+		String[] cmdArg = Arrays.copyOfRange(aCommandToken, 1, aCommandToken.length);
 		if (cmdObject == null) {
 			trace("command not found");
 			aListener.commandReturn(null);
@@ -63,25 +65,21 @@ public abstract class NagatoQuery {
 		if (cmdObject instanceof Method) {
 			final Method method = (Method) cmdObject;
 			Class<?>[] argTypeV = method.getParameterTypes();
-			if (aCommandToken.length + 1 != argTypeV.length) {
+			argTypeV = Arrays.copyOfRange(argTypeV, 2, argTypeV.length);
+			if (cmdArg.length != argTypeV.length) {
 				StringBuffer sb = new StringBuffer();
 				sb.append(cmdName);
-				sb.append(" arg: (");
-				for (int i = 2; i < argTypeV.length; ++i) {
-					if (i != 2)
-						sb.append(",");
-					sb.append(argTypeV[i].getSimpleName());
-				}
-				sb.append(")");
+				sb.append(" arg: ");
+				sb.append(argListToString(argTypeV));
 				trace(sb.toString());
 				aListener.commandReturn(null);
 				return;
 			}
-			final Object[] argv = new Object[aCommandToken.length + 1];
+			final Object[] argv = new Object[argTypeV.length + 2];
 			argv[0] = this;
 			argv[1] = aListener;
-			for (int i = 2; i < argTypeV.length; ++i) {
-				argv[i] = convert(aCommandToken[i - 1], argTypeV[i]);
+			for (int i = 0; i < argTypeV.length; ++i) {
+				argv[i + 2] = convert(cmdArg[i], argTypeV[i]);
 			}
 			mExecutor.execute(new Runnable() {
 				@Override
@@ -96,8 +94,8 @@ public abstract class NagatoQuery {
 			});
 		} else if (cmdObject instanceof Runnable) {
 			final Runnable cmdRun = (Runnable) cmdObject;
-			if (aCommandToken.length != 1) {
-				trace(cmdName + " arg: ()");
+			if (cmdArg.length != 0) {
+				trace(cmdName + " arg: " + argListToString(new Class<?>[0]));
 				aListener.commandReturn(null);
 				return;
 			}
@@ -109,6 +107,18 @@ public abstract class NagatoQuery {
 				}
 			});
 		}
+	}
+
+	public static String argListToString(Class<?>[] aArgTypeV) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("(");
+		for (int i = 0; i < aArgTypeV.length; ++i) {
+			if (i != 0)
+				sb.append(",");
+			sb.append(aArgTypeV[i].getSimpleName());
+		}
+		sb.append(")");
+		return sb.toString();
 	}
 
 	public static Object convert(String aFrom, Class<?> aTo) {
