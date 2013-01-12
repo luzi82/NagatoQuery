@@ -66,13 +66,13 @@ public abstract class NagatoQuery {
 			if (aCommandToken.length + 1 != argTypeV.length) {
 				StringBuffer sb = new StringBuffer();
 				sb.append(cmdName);
-				sb.append(" arg: [");
+				sb.append(" arg: (");
 				for (int i = 2; i < argTypeV.length; ++i) {
 					if (i != 2)
 						sb.append(",");
 					sb.append(argTypeV[i].getSimpleName());
 				}
-				sb.append("]");
+				sb.append(")");
 				trace(sb.toString());
 				aListener.commandReturn(null);
 				return;
@@ -97,7 +97,7 @@ public abstract class NagatoQuery {
 		} else if (cmdObject instanceof Runnable) {
 			final Runnable cmdRun = (Runnable) cmdObject;
 			if (aCommandToken.length != 1) {
-				trace(cmdName + " arg: []");
+				trace(cmdName + " arg: ()");
 				aListener.commandReturn(null);
 				return;
 			}
@@ -206,6 +206,7 @@ public abstract class NagatoQuery {
 		public StdConsole(String aInputPrefix, Executor aExecutor) {
 			super(aExecutor);
 			mInputPrefix = aInputPrefix;
+			loadClass(getClass());
 		}
 
 		@Override
@@ -220,6 +221,11 @@ public abstract class NagatoQuery {
 		public void trace(String aMessage) {
 			System.console().writer().println(aMessage);
 			System.console().writer().flush();
+		}
+
+		public static void cmd_exit(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aExitCode) {
+			System.exit(aExitCode);
+			aListener.commandReturn(null);
 		}
 
 	}

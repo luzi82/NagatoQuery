@@ -183,7 +183,7 @@ public class NagatoQueryTest {
 		sleep(100);
 		Assert.assertEquals(1, nq.mTraceRecord.size());
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("func_string arg: [String]", nq.mTraceRecord.get(0));
+		Assert.assertEquals("func_string arg: (String)", nq.mTraceRecord.get(0));
 		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
 
 		nq.clear();
@@ -192,7 +192,7 @@ public class NagatoQueryTest {
 		sleep(100);
 		Assert.assertEquals(1, nq.mTraceRecord.size());
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("func_string arg: [String]", nq.mTraceRecord.get(0));
+		Assert.assertEquals("func_string arg: (String)", nq.mTraceRecord.get(0));
 		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
 	}
 
@@ -226,7 +226,7 @@ public class NagatoQueryTest {
 		sleep(100);
 		Assert.assertEquals(1, nq.mTraceRecord.size());
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("run arg: []", nq.mTraceRecord.get(0));
+		Assert.assertEquals("run arg: ()", nq.mTraceRecord.get(0));
 		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
 	}
 
