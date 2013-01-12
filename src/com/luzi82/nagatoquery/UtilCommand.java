@@ -45,18 +45,7 @@ public class UtilCommand {
 		String[] cmdList = aQuery.mCommandTree.keySet().toArray(new String[0]);
 		Arrays.sort(cmdList);
 		for (String cmd : cmdList) {
-			Object obj = aQuery.mCommandTree.get(cmd);
-			Class<?>[] argV;
-			if (obj instanceof Method) {
-				Method m = (Method) obj;
-				argV = m.getParameterTypes();
-				argV = Arrays.copyOfRange(argV, 2, argV.length);
-			} else if (obj instanceof Runnable) {
-				argV = new Class<?>[0];
-			} else {
-				continue;
-			}
-			aQuery.trace(cmd + " " + NagatoQuery.argListToString(argV));
+			aQuery.trace(aQuery.methodFormat(cmd));
 		}
 		aListener.commandReturn(null);
 	}

@@ -67,19 +67,21 @@ public abstract class NagatoQuery {
 			Class<?>[] argTypeV = method.getParameterTypes();
 			argTypeV = Arrays.copyOfRange(argTypeV, 2, argTypeV.length);
 			if (cmdArg.length != argTypeV.length) {
-				StringBuffer sb = new StringBuffer();
-				sb.append(cmdName);
-				sb.append(" arg: ");
-				sb.append(argListToString(argTypeV));
-				trace(sb.toString());
+				trace("bad arg: " + methodFormat(cmdName));
 				aListener.commandReturn(null);
 				return;
 			}
 			final Object[] argv = new Object[argTypeV.length + 2];
 			argv[0] = this;
 			argv[1] = aListener;
-			for (int i = 0; i < argTypeV.length; ++i) {
-				argv[i + 2] = convert(cmdArg[i], argTypeV[i]);
+			try {
+				for (int i = 0; i < argTypeV.length; ++i) {
+					argv[i + 2] = convert(cmdArg[i], argTypeV[i]);
+				}
+			} catch (ConvertException ce) {
+				trace("bad arg: " + methodFormat(cmdName));
+				aListener.commandReturn(null);
+				return;
 			}
 			mExecutor.execute(new Runnable() {
 				@Override
@@ -95,7 +97,7 @@ public abstract class NagatoQuery {
 		} else if (cmdObject instanceof Runnable) {
 			final Runnable cmdRun = (Runnable) cmdObject;
 			if (cmdArg.length != 0) {
-				trace(cmdName + " arg: " + argListToString(new Class<?>[0]));
+				trace("bad arg: " + methodFormat(cmdName));
 				aListener.commandReturn(null);
 				return;
 			}
@@ -121,26 +123,30 @@ public abstract class NagatoQuery {
 		return sb.toString();
 	}
 
-	public static Object convert(String aFrom, Class<?> aTo) {
-		if (aTo == String.class) {
-			return aFrom;
-		} else if ((aTo == Character.class) || (aTo == Character.TYPE)) {
-			if (aFrom.length() != 1) {
-				throw new IllegalArgumentException();
+	public static Object convert(String aFrom, Class<?> aTo) throws ConvertException {
+		try {
+			if (aTo == String.class) {
+				return aFrom;
+			} else if ((aTo == Character.class) || (aTo == Character.TYPE)) {
+				if (aFrom.length() != 1) {
+					throw new IllegalArgumentException();
+				}
+				return aFrom.charAt(0);
+			} else if ((aTo == Short.class) || (aTo == Short.TYPE)) {
+				return Short.parseShort(aFrom);
+			} else if ((aTo == Integer.class) || (aTo == Integer.TYPE)) {
+				return Integer.parseInt(aFrom);
+			} else if ((aTo == Long.class) || (aTo == Long.TYPE)) {
+				return Long.parseLong(aFrom);
+			} else if ((aTo == Float.class) || (aTo == Float.TYPE)) {
+				return Float.parseFloat(aFrom);
+			} else if ((aTo == Double.class) || (aTo == Double.TYPE)) {
+				return Double.parseDouble(aFrom);
+			} else if ((aTo == Boolean.class) || (aTo == Boolean.TYPE)) {
+				return Boolean.parseBoolean(aFrom);
 			}
-			return aFrom.charAt(0);
-		} else if ((aTo == Short.class) || (aTo == Short.TYPE)) {
-			return Short.parseShort(aFrom);
-		} else if ((aTo == Integer.class) || (aTo == Integer.TYPE)) {
-			return Integer.parseInt(aFrom);
-		} else if ((aTo == Long.class) || (aTo == Long.TYPE)) {
-			return Long.parseLong(aFrom);
-		} else if ((aTo == Float.class) || (aTo == Float.TYPE)) {
-			return Float.parseFloat(aFrom);
-		} else if ((aTo == Double.class) || (aTo == Double.TYPE)) {
-			return Double.parseDouble(aFrom);
-		} else if ((aTo == Boolean.class) || (aTo == Boolean.TYPE)) {
-			return Boolean.parseBoolean(aFrom);
+		} catch (NumberFormatException nfe) {
+			throw new ConvertException();
 		}
 		throw new IllegalArgumentException("aTo is " + aTo.toString());
 	}
@@ -240,10 +246,37 @@ public abstract class NagatoQuery {
 
 	}
 
+	public String methodFormat(String aCommandName) {
+		StringBuffer sb = new StringBuffer();
+		sb.append(aCommandName);
+		sb.append(" ");
+
+		Class<?>[] argTypeV = null;
+		Object cmdObject = mCommandTree.get(aCommandName);
+		if (cmdObject == null) {
+			throw new IllegalArgumentException();
+		} else if (cmdObject instanceof Method) {
+			Method method = (Method) cmdObject;
+			argTypeV = method.getParameterTypes();
+			argTypeV = Arrays.copyOfRange(argTypeV, 2, argTypeV.length);
+		} else if (cmdObject instanceof Runnable) {
+			argTypeV = new Class<?>[0];
+		} else {
+			throw new RuntimeException();
+		}
+		sb.append(argListToString(argTypeV));
+
+		return sb.toString();
+	}
+
 	public static void main(String[] argv) {
 		StdConsole sc = new StdConsole("YUKI.N> ", Executors.newFixedThreadPool(5));
 		sc.loadClass(UtilCommand.class);
 		sc.start();
+	}
+
+	public static class ConvertException extends Exception {
+		private static final long serialVersionUID = -5163271642328951020L;
 	}
 
 }
