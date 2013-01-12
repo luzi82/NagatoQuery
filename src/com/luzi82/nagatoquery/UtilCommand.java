@@ -9,13 +9,8 @@ import java.util.Map.Entry;
 
 public class UtilCommand {
 
-	public static void cmd_echo(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aText) {
-		aListener.commandReturn(aText);
-	}
-
-	public static void cmd_exit(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
-		aQuery.setVar("%exit", "1");
-		aQuery.onExit();
+	public static void cmd_trace(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aText) {
+		aQuery.trace(aText);
 		aListener.commandReturn(null);
 	}
 

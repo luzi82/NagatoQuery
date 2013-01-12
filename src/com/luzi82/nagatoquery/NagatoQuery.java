@@ -50,29 +50,56 @@ public abstract class NagatoQuery {
 			for (int i = 0; i < token.length; ++i) {
 				token[i] = parseInput(token[i]);
 			}
-			Method method = mCommandTree.get(token[0]);
-			Object[] argv = new Object[token.length + 1];
-			argv[0] = this;
-			argv[1] = aListener;
-			for (int i = 1; i < token.length; ++i) {
-				argv[i + 1] = token[i];
-			}
-			method.invoke(null, argv);
+			execute(token, aListener);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			aListener.commandReturn(null);
 		}
 	}
 
-	public String parseInput(String aInput) {
-		while (true) {
-			if (aInput.startsWith("$")) {
-				aInput = mVarTree.get(aInput.substring(1));
-			} else if (aInput.startsWith("%")) {
-				aInput = mTmpVarTree.get(aInput.substring(1));
-			} else {
-				return aInput;
+	public void execute(String[] aCommandToken, CommandListener aListener) throws Throwable {
+		Method method = mCommandTree.get(aCommandToken[0]);
+		Class<?>[] argTypeV = method.getParameterTypes();
+		Object[] argv = new Object[aCommandToken.length + 1];
+		argv[0] = this;
+		argv[1] = aListener;
+		for (int i = 2; i < argTypeV.length; ++i) {
+			argv[i] = convert(aCommandToken[i - 1], argTypeV[i]);
+		}
+		method.invoke(null, argv);
+	}
+
+	public static Object convert(String aFrom, Class<?> aTo) {
+		if (aTo == String.class) {
+			return aFrom;
+		} else if ((aTo == Character.class) || (aTo == Character.TYPE)) {
+			if (aFrom.length() != 1) {
+				throw new IllegalArgumentException();
 			}
+			return aFrom.charAt(0);
+		} else if ((aTo == Short.class) || (aTo == Short.TYPE)) {
+			return Short.parseShort(aFrom);
+		} else if ((aTo == Integer.class) || (aTo == Integer.TYPE)) {
+			return Integer.parseInt(aFrom);
+		} else if ((aTo == Long.class) || (aTo == Long.TYPE)) {
+			return Long.parseLong(aFrom);
+		} else if ((aTo == Float.class) || (aTo == Float.TYPE)) {
+			return Float.parseFloat(aFrom);
+		} else if ((aTo == Double.class) || (aTo == Double.TYPE)) {
+			return Double.parseDouble(aFrom);
+		} else if ((aTo == Boolean.class) || (aTo == Boolean.TYPE)) {
+			return Boolean.parseBoolean(aFrom);
+		}
+		throw new IllegalArgumentException("aTo is " + aTo.toString());
+	}
+
+	public String parseInput(String aInput) {
+		if (aInput.startsWith("$")) {
+			return mVarTree.get(parseInput(aInput.substring(1)));
+		} else if (aInput.startsWith("%")) {
+			return mTmpVarTree.get(parseInput(aInput.substring(1)));
+		} else {
+			return aInput;
 		}
 	}
 
@@ -104,8 +131,6 @@ public abstract class NagatoQuery {
 	}
 
 	public abstract void trace(String aMessage);
-
-	public abstract void onExit();
 
 	public static abstract class AbstractConsole extends NagatoQuery implements Runnable {
 		public AbstractConsole(Executor aExecutor) {
@@ -153,11 +178,6 @@ public abstract class NagatoQuery {
 		public void trace(String aMessage) {
 			System.console().writer().println(aMessage);
 			System.console().writer().flush();
-		}
-
-		@Override
-		public void onExit() {
-			System.exit(0);
 		}
 
 	}

@@ -1,0 +1,189 @@
+package com.luzi82.nagatoquery;
+
+import java.util.LinkedList;
+import java.util.concurrent.Executors;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+public class NagatoQueryTest {
+
+	public static void cmd_helloworld(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
+		aListener.commandReturn("Hello World");
+	}
+
+	public static void cmd_func3(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, boolean aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	public static class TestNq extends NagatoQuery implements NagatoQuery.CommandListener {
+		public LinkedList<String> mTraceRecord = new LinkedList<String>();
+		public LinkedList<String> mCommnadReturnRecord = new LinkedList<String>();
+
+		public TestNq() {
+			super(Executors.newFixedThreadPool(1));
+		}
+
+		@Override
+		public void trace(String aMessage) {
+			mTraceRecord.addLast(aMessage);
+		}
+
+		@Override
+		public void commandReturn(String aResult) {
+			mCommnadReturnRecord.addLast(aResult);
+		}
+
+		public void clear() {
+			mTraceRecord.clear();
+			mCommnadReturnRecord.clear();
+		}
+	}
+
+	@Test
+	public void testHelloWorld() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("helloworld", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("Hello World", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void cmd_func_string(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	@Test
+	public void testArg() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("func_string asdf", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_string asdf", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void cmd_func_inttype(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	@Test
+	public void testIntTypeArg() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("func_inttype 123", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_inttype 123", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void cmd_func_intclass(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, Integer aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	@Test
+	public void testIntClassArg() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("func_intclass 123", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_intclass 123", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void cmd_func_doubletype(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, double aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	@Test
+	public void testDoubleTypeArg() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("func_doubletype 123", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_doubletype 123.0", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void cmd_func_doubleclass(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, Double aValue) {
+		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	}
+
+	@Test
+	public void testDoubleClassArg() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.execute("func_doubleclass 123", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_doubleclass 123.0", nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testVar() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.setVar("$asdf", "qwer");
+		nq.execute("func_string $asdf", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_string qwer", nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testTmpVar() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.setVar("%asdf", "qwer");
+		nq.execute("func_string %asdf", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_string qwer", nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testVarRecursive() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.setVar("$v1", "v2");
+		nq.setVar("$v2", "v3");
+		nq.execute("func_string $$v1", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_string v3", nq.mCommnadReturnRecord.get(0));
+	}
+
+	@Test
+	public void testTempVarRecursive() {
+		TestNq nq = new TestNq();
+		nq.loadClass(getClass());
+		nq.setVar("%v1", "v2");
+		nq.setVar("%v2", "v3");
+		nq.execute("func_string %%v1", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("cmd_func_string v3", nq.mCommnadReturnRecord.get(0));
+	}
+
+	public static void sleep(long aMs) {
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String getCurrentMethodName() {
+		StackTraceElement[] steV = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < steV.length; ++i) {
+			StackTraceElement ste = steV[i];
+			if (ste.getMethodName() == "getCurrentMethodName") {
+				return steV[i + 1].getMethodName();
+			}
+		}
+		throw new Error();
+	}
+
+}
