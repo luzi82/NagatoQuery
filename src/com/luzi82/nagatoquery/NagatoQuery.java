@@ -68,8 +68,7 @@ public abstract class NagatoQuery {
 		while (true) {
 			if (aInput.startsWith("$")) {
 				aInput = mVarTree.get(aInput.substring(1));
-			}
-			if (aInput.startsWith("%")) {
+			} else if (aInput.startsWith("%")) {
 				aInput = mTmpVarTree.get(aInput.substring(1));
 			} else {
 				return aInput;
