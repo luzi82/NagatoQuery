@@ -1,5 +1,6 @@
 package com.luzi82.nagatoquery;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Map;
@@ -41,32 +42,42 @@ public abstract class NagatoQuery {
 	}
 
 	public void execute(String aCommand, CommandListener aListener) {
-		try {
-			String[] token = token(aCommand);
-			if (token.length <= 0) {
-				aListener.commandReturn(null);
-				return;
-			}
-			for (int i = 0; i < token.length; ++i) {
-				token[i] = parseInput(token[i]);
-			}
-			execute(token, aListener);
-		} catch (Throwable t) {
-			t.printStackTrace();
+		String[] token = token(aCommand);
+		if (token.length <= 0) {
 			aListener.commandReturn(null);
+			return;
 		}
+		for (int i = 0; i < token.length; ++i) {
+			token[i] = parseInput(token[i]);
+		}
+		execute(token, aListener);
 	}
 
-	public void execute(String[] aCommandToken, CommandListener aListener) throws Throwable {
-		Method method = mCommandTree.get(aCommandToken[0]);
+	public void execute(String[] aCommandToken, final CommandListener aListener) {
+		final Method method = mCommandTree.get(aCommandToken[0]);
+		if (method == null) {
+			trace("command not found");
+			aListener.commandReturn(null);
+			return;
+		}
 		Class<?>[] argTypeV = method.getParameterTypes();
-		Object[] argv = new Object[aCommandToken.length + 1];
+		final Object[] argv = new Object[aCommandToken.length + 1];
 		argv[0] = this;
 		argv[1] = aListener;
 		for (int i = 2; i < argTypeV.length; ++i) {
 			argv[i] = convert(aCommandToken[i - 1], argTypeV[i]);
 		}
-		method.invoke(null, argv);
+		mExecutor.execute(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					method.invoke(null, argv);
+				} catch (Throwable t) {
+					t.printStackTrace();
+					aListener.commandReturn(null);
+				}
+			}
+		});
 	}
 
 	public static Object convert(String aFrom, Class<?> aTo) {

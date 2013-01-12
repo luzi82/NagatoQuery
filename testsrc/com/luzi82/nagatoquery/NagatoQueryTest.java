@@ -167,6 +167,17 @@ public class NagatoQueryTest {
 		Assert.assertEquals("cmd_func_string v3", nq.mCommnadReturnRecord.get(0));
 	}
 
+	@Test
+	public void testCommandNotFound() {
+		TestNq nq = new TestNq();
+		nq.execute("not_exist", nq);
+		sleep(100);
+		Assert.assertEquals(1, nq.mTraceRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("command not found", nq.mTraceRecord.get(0));
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+	}
+
 	public static void sleep(long aMs) {
 		try {
 			Thread.sleep(100);
