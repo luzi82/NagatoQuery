@@ -280,6 +280,7 @@ public abstract class NagatoQuery {
 				@Override
 				public void commandError(String aError) {
 					trace(aError);
+					start();
 				}
 			});
 		}
