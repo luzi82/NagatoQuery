@@ -266,8 +266,6 @@ public abstract class NagatoQuery {
 		}
 
 		public void run() {
-			if (mTmpVarTree.containsKey("exit"))
-				return;
 			String line = readLine();
 			execute(line, new CommandListener() {
 				@Override
