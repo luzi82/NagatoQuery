@@ -15,7 +15,7 @@ public class NagatoQueryTest {
 
 	public static class TestNq extends NagatoQuery implements NagatoQuery.CommandListener {
 		public LinkedList<String> mCommnadReturnRecord = new LinkedList<String>();
-		public LinkedList<String> mCommnadMessageRecord = new LinkedList<String>();
+		public LinkedList<String> mCommnadTraceRecord = new LinkedList<String>();
 		public LinkedList<String> mCommnadErrorRecord = new LinkedList<String>();
 
 		public TestNq() {
@@ -29,7 +29,7 @@ public class NagatoQueryTest {
 
 		@Override
 		public void commandTrace(String aMessage) {
-			mCommnadMessageRecord.addLast(aMessage);
+			mCommnadTraceRecord.addLast(aMessage);
 		}
 
 		@Override
@@ -40,7 +40,7 @@ public class NagatoQueryTest {
 		public void clear() {
 			mCommnadReturnRecord.clear();
 			mCommnadErrorRecord.clear();
-			mCommnadMessageRecord.clear();
+			mCommnadTraceRecord.clear();
 		}
 	}
 
