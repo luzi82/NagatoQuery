@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 public class UtilCommand {
 
 	public static void cmd_trace(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aText) {
-		aQuery.trace(aText);
+		aListener.commandTrace(aText);
 		aListener.commandReturn(null);
 	}
 
@@ -30,12 +30,12 @@ public class UtilCommand {
 		varList = aQuery.mVarTree.entrySet().toArray(new Map.Entry[0]);
 		sort(varList);
 		for (Map.Entry<String, String> me : varList) {
-			aQuery.trace("$" + me.getKey() + " = " + me.getValue());
+			aListener.commandTrace("$" + me.getKey() + " = " + me.getValue());
 		}
 		varList = aQuery.mTmpVarTree.entrySet().toArray(new Map.Entry[0]);
 		sort(varList);
 		for (Map.Entry<String, String> me : varList) {
-			aQuery.trace("%" + me.getKey() + " = " + me.getValue());
+			aListener.commandTrace("%" + me.getKey() + " = " + me.getValue());
 		}
 		aListener.commandReturn(null);
 	}
@@ -44,7 +44,7 @@ public class UtilCommand {
 		String[] cmdList = aQuery.mCommandTree.keySet().toArray(new String[0]);
 		Arrays.sort(cmdList);
 		for (String cmd : cmdList) {
-			aQuery.trace(aQuery.methodFormat(cmd));
+			aListener.commandTrace(aQuery.methodFormat(cmd));
 		}
 		aListener.commandReturn(null);
 	}

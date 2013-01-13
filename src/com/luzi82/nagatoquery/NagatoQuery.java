@@ -22,7 +22,7 @@ import com.luzi82.nagatoquery.NqLineParser.StringUnit;
 import com.luzi82.nagatoquery.NqLineParser.Unit;
 import com.luzi82.nagatoquery.NqLineParser.VarUnit;
 
-public abstract class NagatoQuery {
+public class NagatoQuery {
 
 	public static final String CMD_PREFIX = "cmd_";
 
@@ -40,6 +40,8 @@ public abstract class NagatoQuery {
 	}
 
 	public interface CommandListener {
+		public void commandTrace(String aMessage);
+		
 		public void commandReturn(String aResult);
 
 		public void commandError(String aError);
@@ -47,9 +49,13 @@ public abstract class NagatoQuery {
 
 	public abstract class FwErrCommandListener implements CommandListener {
 		final CommandListener mListener;
-
+		
 		public FwErrCommandListener(CommandListener aListener) {
 			mListener = aListener;
+		}
+		
+		public void commandTrace(String aMessage){
+			mListener.commandTrace(aMessage);
 		}
 
 		public void commandError(String aError) {
@@ -267,7 +273,7 @@ public abstract class NagatoQuery {
 		}
 	}
 
-	public abstract void trace(String aMessage);
+//	public abstract void trace(String aMessage);
 
 	public static class StreamIO extends NagatoQuery implements Runnable {
 		public final String mInputPrefix;
@@ -301,11 +307,16 @@ public abstract class NagatoQuery {
 						trace(aResult);
 					start();
 				}
-
+				
 				@Override
 				public void commandError(String aError) {
 					trace(aError);
 					start();
+				}
+
+				@Override
+				public void commandTrace(String aMessage) {
+					trace(aMessage);
 				}
 			});
 		}
@@ -325,7 +336,6 @@ public abstract class NagatoQuery {
 			}
 		}
 
-		@Override
 		public void trace(String aMessage) {
 			try {
 				mBufferedWriter.write(aMessage + "\n");
