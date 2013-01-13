@@ -1,6 +1,15 @@
 package com.luzi82.nagatoquery;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Map;
@@ -260,9 +269,27 @@ public abstract class NagatoQuery {
 
 	public abstract void trace(String aMessage);
 
-	public static abstract class AbstractConsole extends NagatoQuery implements Runnable {
-		public AbstractConsole(Executor aExecutor) {
+	public static class StreamIO extends NagatoQuery implements Runnable {
+		public final String mInputPrefix;
+		public final InputStream mInputStream;
+		public final OutputStream mOutputStream;
+		public final BufferedReader mBufferedReader;
+		public final BufferedWriter mBufferedWriter;
+
+		public StreamIO(String aInputPrefix, InputStream aInputStream, OutputStream aOutputStream, Executor aExecutor) {
 			super(aExecutor);
+			mInputPrefix = aInputPrefix;
+			mInputStream = aInputStream;
+			mOutputStream = aOutputStream;
+
+			try {
+				mBufferedReader = new BufferedReader(new InputStreamReader(aInputStream, "UTF-8"));
+				mBufferedWriter = new BufferedWriter(new OutputStreamWriter(aOutputStream, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				throw new Error(e);
+			}
+
+			loadClass(getClass());
 		}
 
 		public void run() {
@@ -284,33 +311,28 @@ public abstract class NagatoQuery {
 		}
 
 		public void start() {
-			mExecutor.execute(AbstractConsole.this);
+			mExecutor.execute(this);
 		}
 
-		public abstract String readLine();
-	}
-
-	public static class StdConsole extends AbstractConsole {
-		public String mInputPrefix;
-
-		public StdConsole(String aInputPrefix, Executor aExecutor) {
-			super(aExecutor);
-			mInputPrefix = aInputPrefix;
-			loadClass(getClass());
-		}
-
-		@Override
 		public String readLine() {
-			if (mInputPrefix != null)
-				System.console().writer().write(mInputPrefix);
-			System.console().writer().flush();
-			return System.console().readLine();
+			try {
+				if (mInputPrefix != null)
+					mBufferedWriter.write(mInputPrefix);
+				mBufferedWriter.flush();
+				return mBufferedReader.readLine();
+			} catch (IOException e) {
+				throw new Error(e);
+			}
 		}
 
 		@Override
 		public void trace(String aMessage) {
-			System.console().writer().println(aMessage);
-			System.console().writer().flush();
+			try {
+				mBufferedWriter.write(aMessage + "\n");
+				mBufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		public static void cmd_exit(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aExitCode) {
@@ -344,7 +366,7 @@ public abstract class NagatoQuery {
 	}
 
 	public static void main(String[] argv) {
-		StdConsole sc = new StdConsole("YUKI.N> ", Executors.newFixedThreadPool(5));
+		StreamIO sc = new StreamIO("YUKI.N> ", System.in, System.out, Executors.newFixedThreadPool(5));
 		sc.loadClass(UtilCommand.class);
 		sc.start();
 	}
