@@ -1,15 +1,6 @@
 package com.luzi82.nagatoquery;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Map;
@@ -41,7 +32,7 @@ public class NagatoQuery {
 
 	public interface CommandListener {
 		public void commandTrace(String aMessage);
-		
+
 		public void commandReturn(String aResult);
 
 		public void commandError(String aError);
@@ -49,12 +40,12 @@ public class NagatoQuery {
 
 	public abstract class FwErrCommandListener implements CommandListener {
 		final CommandListener mListener;
-		
+
 		public FwErrCommandListener(CommandListener aListener) {
 			mListener = aListener;
 		}
-		
-		public void commandTrace(String aMessage){
+
+		public void commandTrace(String aMessage) {
 			mListener.commandTrace(aMessage);
 		}
 
@@ -72,6 +63,25 @@ public class NagatoQuery {
 				mCommandTree.put(name, m);
 			}
 		}
+	}
+
+	public void loadMethod(String aCmdName, String aMethodId) throws ClassNotFoundException, NoSuchMethodException {
+		int lastDotIdx = aMethodId.lastIndexOf('.');
+		String className = aMethodId.substring(0, lastDotIdx);
+		String methodName = aMethodId.substring(lastDotIdx + 1);
+		Class<?> clas = Class.forName(className);
+		Method[] clasMethod = clas.getMethods();
+		Method method = null;
+		for (Method m : clasMethod) {
+			if (m.getName().equals(methodName)) {
+				method = m;
+				break;
+			}
+		}
+		if (method == null) {
+			throw new NoSuchMethodException();
+		}
+		mCommandTree.put(aCmdName, method);
 	}
 
 	public void execute(String aCommand, CommandListener aListener) {
@@ -273,84 +283,88 @@ public class NagatoQuery {
 		}
 	}
 
-//	public abstract void trace(String aMessage);
+	// public abstract void trace(String aMessage);
 
-	public static class StreamIO extends NagatoQuery implements Runnable {
-		public final String mInputPrefix;
-		public final InputStream mInputStream;
-		public final OutputStream mOutputStream;
-		public final BufferedReader mBufferedReader;
-		public final BufferedWriter mBufferedWriter;
-
-		public StreamIO(String aInputPrefix, InputStream aInputStream, OutputStream aOutputStream, Executor aExecutor) {
-			super(aExecutor);
-			mInputPrefix = aInputPrefix;
-			mInputStream = aInputStream;
-			mOutputStream = aOutputStream;
-
-			try {
-				mBufferedReader = new BufferedReader(new InputStreamReader(aInputStream, "UTF-8"));
-				mBufferedWriter = new BufferedWriter(new OutputStreamWriter(aOutputStream, "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				throw new Error(e);
-			}
-
-			loadClass(getClass());
-		}
-
-		public void run() {
-			String line = readLine();
-			execute(line, new CommandListener() {
-				@Override
-				public void commandReturn(String aResult) {
-					if (aResult != null)
-						trace(aResult);
-					start();
-				}
-				
-				@Override
-				public void commandError(String aError) {
-					trace(aError);
-					start();
-				}
-
-				@Override
-				public void commandTrace(String aMessage) {
-					trace(aMessage);
-				}
-			});
-		}
-
-		public void start() {
-			mExecutor.execute(this);
-		}
-
-		public String readLine() {
-			try {
-				if (mInputPrefix != null)
-					mBufferedWriter.write(mInputPrefix);
-				mBufferedWriter.flush();
-				return mBufferedReader.readLine();
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-		}
-
-		public void trace(String aMessage) {
-			try {
-				mBufferedWriter.write(aMessage + "\n");
-				mBufferedWriter.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		public static void cmd_exit(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aExitCode) {
-			System.exit(aExitCode);
-			aListener.commandReturn(null);
-		}
-
-	}
+	// public static class StreamIO extends NagatoQuery implements Runnable {
+	// public final String mInputPrefix;
+	// public final InputStream mInputStream;
+	// public final OutputStream mOutputStream;
+	// public final BufferedReader mBufferedReader;
+	// public final BufferedWriter mBufferedWriter;
+	//
+	// public StreamIO(String aInputPrefix, InputStream aInputStream,
+	// OutputStream aOutputStream, Executor aExecutor) {
+	// super(aExecutor);
+	// mInputPrefix = aInputPrefix;
+	// mInputStream = aInputStream;
+	// mOutputStream = aOutputStream;
+	//
+	// try {
+	// mBufferedReader = new BufferedReader(new InputStreamReader(aInputStream,
+	// "UTF-8"));
+	// mBufferedWriter = new BufferedWriter(new
+	// OutputStreamWriter(aOutputStream, "UTF-8"));
+	// } catch (UnsupportedEncodingException e) {
+	// throw new Error(e);
+	// }
+	//
+	// loadClass(getClass());
+	// }
+	//
+	// public void run() {
+	// String line = readLine();
+	// execute(line, new CommandListener() {
+	// @Override
+	// public void commandReturn(String aResult) {
+	// if (aResult != null)
+	// trace(aResult);
+	// start();
+	// }
+	//
+	// @Override
+	// public void commandError(String aError) {
+	// trace(aError);
+	// start();
+	// }
+	//
+	// @Override
+	// public void commandTrace(String aMessage) {
+	// trace(aMessage);
+	// }
+	// });
+	// }
+	//
+	// public void start() {
+	// mExecutor.execute(this);
+	// }
+	//
+	// public String readLine() {
+	// try {
+	// if (mInputPrefix != null)
+	// mBufferedWriter.write(mInputPrefix);
+	// mBufferedWriter.flush();
+	// return mBufferedReader.readLine();
+	// } catch (IOException e) {
+	// throw new Error(e);
+	// }
+	// }
+	//
+	// public void trace(String aMessage) {
+	// try {
+	// mBufferedWriter.write(aMessage + "\n");
+	// mBufferedWriter.flush();
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// }
+	// }
+	//
+	// public static void cmd_exit(NagatoQuery aQuery,
+	// NagatoQuery.CommandListener aListener, int aExitCode) {
+	// System.exit(aExitCode);
+	// aListener.commandReturn(null);
+	// }
+	//
+	// }
 
 	public String methodFormat(String aCommandName) {
 		StringBuffer sb = new StringBuffer();
@@ -376,9 +390,22 @@ public class NagatoQuery {
 	}
 
 	public static void main(String[] argv) {
-		StreamIO sc = new StreamIO("YUKI.N> ", System.in, System.out, Executors.newFixedThreadPool(5));
-		sc.loadClass(UtilCommand.class);
-		sc.start();
+		NagatoQuery nq = new NagatoQuery(Executors.newCachedThreadPool());
+		nq.loadClass(UtilCommand.class);
+		try {
+			nq.loadMethod("exit", NagatoQuery.class.getName() + ".exitCmd");
+		} catch (ClassNotFoundException e) {
+			throw new Error(e);
+		} catch (NoSuchMethodException e) {
+			throw new Error(e);
+		}
+		NqStreamBump nsb = new NqStreamBump(nq, System.in, System.out, "YUKI.N> ");
+		nsb.start();
+	}
+
+	public static void exitCmd(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aExitCode) {
+		System.exit(aExitCode);
+		aListener.commandReturn(null);
 	}
 
 	public static class ConvertException extends Exception {
