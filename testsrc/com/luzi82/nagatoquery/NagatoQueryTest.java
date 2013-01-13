@@ -16,6 +16,7 @@ public class NagatoQueryTest {
 	public static class TestNq extends NagatoQuery implements NagatoQuery.CommandListener {
 		public LinkedList<String> mTraceRecord = new LinkedList<String>();
 		public LinkedList<String> mCommnadReturnRecord = new LinkedList<String>();
+		public LinkedList<String> mCommnadErrorRecord = new LinkedList<String>();
 
 		public TestNq() {
 			super(Executors.newFixedThreadPool(1));
@@ -31,9 +32,15 @@ public class NagatoQueryTest {
 			mCommnadReturnRecord.addLast(aResult);
 		}
 
+		@Override
+		public void commandError(String aError) {
+			mCommnadErrorRecord.addLast(aError);
+		}
+
 		public void clear() {
 			mTraceRecord.clear();
 			mCommnadReturnRecord.clear();
+			mCommnadErrorRecord.clear();
 		}
 	}
 
@@ -168,10 +175,9 @@ public class NagatoQueryTest {
 		TestNq nq = new TestNq();
 		nq.execute("not_exist", nq);
 		sleep(100);
-		Assert.assertEquals(1, nq.mTraceRecord.size());
-		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("command not found", nq.mTraceRecord.get(0));
-		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(0, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("command not found", nq.mCommnadErrorRecord.get(0));
 	}
 
 	@Test
@@ -181,19 +187,17 @@ public class NagatoQueryTest {
 
 		nq.execute("func_string", nq);
 		sleep(100);
-		Assert.assertEquals(1, nq.mTraceRecord.size());
-		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("bad arg: func_string (String)", nq.mTraceRecord.get(0));
-		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(0, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("bad arg: func_string (String)", nq.mCommnadErrorRecord.get(0));
 
 		nq.clear();
 
 		nq.execute("func_string a b", nq);
 		sleep(100);
-		Assert.assertEquals(1, nq.mTraceRecord.size());
-		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("bad arg: func_string (String)", nq.mTraceRecord.get(0));
-		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(0, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("bad arg: func_string (String)", nq.mCommnadErrorRecord.get(0));
 	}
 
 	@Test
@@ -208,7 +212,7 @@ public class NagatoQueryTest {
 		});
 		nq.execute("run", nq);
 		sleep(100);
-		Assert.assertEquals(0, nq.mTraceRecord.size());
+		Assert.assertEquals(0, nq.mCommnadErrorRecord.size());
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
 		Assert.assertEquals(1, x[0]);
@@ -224,10 +228,9 @@ public class NagatoQueryTest {
 		});
 		nq.execute("run x", nq);
 		sleep(100);
-		Assert.assertEquals(1, nq.mTraceRecord.size());
-		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("bad arg: run ()", nq.mTraceRecord.get(0));
-		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(0, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("bad arg: run ()", nq.mCommnadErrorRecord.get(0));
 	}
 
 	@Test
@@ -236,10 +239,9 @@ public class NagatoQueryTest {
 		nq.loadClass(getClass());
 		nq.execute("func_inttype x", nq);
 		sleep(100);
-		Assert.assertEquals(1, nq.mTraceRecord.size());
-		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
-		Assert.assertEquals("bad arg: func_inttype (int)", nq.mTraceRecord.get(0));
-		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(0, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals("bad arg: func_inttype (int)", nq.mCommnadErrorRecord.get(0));
 	}
 
 	public static void sleep(long aMs) {

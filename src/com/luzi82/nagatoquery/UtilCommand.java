@@ -1,6 +1,5 @@
 package com.luzi82.nagatoquery;
 
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;

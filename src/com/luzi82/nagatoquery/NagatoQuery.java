@@ -1,13 +1,17 @@
 package com.luzi82.nagatoquery;
 
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
+
+import com.luzi82.nagatoquery.NqLineParser.CommandUnit;
+import com.luzi82.nagatoquery.NqLineParser.StringUnit;
+import com.luzi82.nagatoquery.NqLineParser.Unit;
+import com.luzi82.nagatoquery.NqLineParser.VarUnit;
 
 public abstract class NagatoQuery {
 
@@ -28,6 +32,20 @@ public abstract class NagatoQuery {
 
 	public interface CommandListener {
 		public void commandReturn(String aResult);
+
+		public void commandError(String aError);
+	}
+
+	public abstract class FwErrCommandListener implements CommandListener {
+		final CommandListener mListener;
+
+		public FwErrCommandListener(CommandListener aListener) {
+			mListener = aListener;
+		}
+
+		public void commandError(String aError) {
+			mListener.commandError(aError);
+		}
 	}
 
 	public void loadClass(Class<?> aClass) {
@@ -42,15 +60,83 @@ public abstract class NagatoQuery {
 	}
 
 	public void execute(String aCommand, CommandListener aListener) {
-		String[] token = token(aCommand);
-		if (token.length <= 0) {
-			aListener.commandReturn(null);
-			return;
+		CommandUnit commandUnit = null;
+		try {
+			commandUnit = NqLineParser.parse(aCommand);
+		} catch (ParseException e) {
+			aListener.commandError(e.getMessage());
 		}
-		for (int i = 0; i < token.length; ++i) {
-			token[i] = parseInput(token[i]);
+		execute(commandUnit, aListener);
+	}
+
+	class Execution implements Runnable {
+		final Unit mUnit;
+		final CommandListener mListener;
+		String[] mArg = null;
+		int mArgOffset = 0;
+
+		public Execution(Unit aUnit, CommandListener aListener) {
+			mUnit = aUnit;
+			mListener = aListener;
 		}
-		execute(token, aListener);
+
+		@Override
+		public synchronized void run() {
+			if (mUnit instanceof StringUnit) {
+				StringUnit u = (StringUnit) mUnit;
+				mListener.commandReturn(u.mString);
+			} else if (mUnit instanceof VarUnit) {
+				VarUnit u = (VarUnit) mUnit;
+				if (mArg == null) {
+					mArg = new String[1];
+					execute(u.mUnit, new FwErrCommandListener(mListener) {
+						@Override
+						public void commandReturn(String aResult) {
+							mArg[0] = aResult;
+							start();
+						}
+					});
+				} else {
+					char varType = u.mType;
+					if (varType == '$') {
+						mListener.commandReturn(mVarTree.get(mArg[0]));
+					} else if (varType == '%') {
+						mListener.commandReturn(mTmpVarTree.get(mArg[0]));
+					} else {
+						mListener.commandError("varType = " + varType);
+					}
+				}
+			} else if (mUnit instanceof CommandUnit) {
+				CommandUnit u = (CommandUnit) mUnit;
+				if (mArg == null) {
+					mArg = new String[u.mUnitAry.length];
+				}
+				if (mArgOffset < u.mUnitAry.length) {
+					execute(u.mUnitAry[mArgOffset], new FwErrCommandListener(mListener) {
+						@Override
+						public void commandReturn(String aResult) {
+							mArg[mArgOffset] = aResult;
+							++mArgOffset;
+							start();
+						}
+					});
+				} else {
+					execute(mArg, mListener);
+				}
+			} else {
+				mListener.commandError("unknown unit: " + mUnit.getClass().getName());
+			}
+		}
+
+		public void start() {
+			mExecutor.execute(this);
+		}
+
+	}
+
+	public void execute(Unit aUnit, CommandListener aListener) {
+		Execution ex = new Execution(aUnit, aListener);
+		ex.start();
 	}
 
 	public void execute(String[] aCommandToken, final CommandListener aListener) {
@@ -58,8 +144,7 @@ public abstract class NagatoQuery {
 		Object cmdObject = mCommandTree.get(cmdName);
 		String[] cmdArg = Arrays.copyOfRange(aCommandToken, 1, aCommandToken.length);
 		if (cmdObject == null) {
-			trace("command not found");
-			aListener.commandReturn(null);
+			aListener.commandError("command not found");
 			return;
 		}
 		if (cmdObject instanceof Method) {
@@ -67,8 +152,7 @@ public abstract class NagatoQuery {
 			Class<?>[] argTypeV = method.getParameterTypes();
 			argTypeV = Arrays.copyOfRange(argTypeV, 2, argTypeV.length);
 			if (cmdArg.length != argTypeV.length) {
-				trace("bad arg: " + methodFormat(cmdName));
-				aListener.commandReturn(null);
+				aListener.commandError("bad arg: " + methodFormat(cmdName));
 				return;
 			}
 			final Object[] argv = new Object[argTypeV.length + 2];
@@ -79,8 +163,7 @@ public abstract class NagatoQuery {
 					argv[i + 2] = convert(cmdArg[i], argTypeV[i]);
 				}
 			} catch (ConvertException ce) {
-				trace("bad arg: " + methodFormat(cmdName));
-				aListener.commandReturn(null);
+				aListener.commandError("bad arg: " + methodFormat(cmdName));
 				return;
 			}
 			mExecutor.execute(new Runnable() {
@@ -89,16 +172,14 @@ public abstract class NagatoQuery {
 					try {
 						method.invoke(null, argv);
 					} catch (Throwable t) {
-						t.printStackTrace();
-						aListener.commandReturn(null);
+						aListener.commandError("exception: " + t.getMessage());
 					}
 				}
 			});
 		} else if (cmdObject instanceof Runnable) {
 			final Runnable cmdRun = (Runnable) cmdObject;
 			if (cmdArg.length != 0) {
-				trace("bad arg: " + methodFormat(cmdName));
-				aListener.commandReturn(null);
+				aListener.commandError("bad arg: " + methodFormat(cmdName));
 				return;
 			}
 			mExecutor.execute(new Runnable() {
@@ -161,17 +242,6 @@ public abstract class NagatoQuery {
 		}
 	}
 
-	public static String[] token(String aLine) {
-		String[] v = aLine.split(Pattern.quote(" "));
-		LinkedList<String> vv = new LinkedList<String>();
-		for (String s : v) {
-			if (s.length() == 0)
-				continue;
-			vv.addLast(s);
-		}
-		return vv.toArray(new String[0]);
-	}
-
 	public String getVarString(String aKey) {
 		String v = parseInput(aKey);
 		return v;
@@ -205,6 +275,11 @@ public abstract class NagatoQuery {
 					if (aResult != null)
 						trace(aResult);
 					start();
+				}
+
+				@Override
+				public void commandError(String aError) {
+					trace(aError);
 				}
 			});
 		}
