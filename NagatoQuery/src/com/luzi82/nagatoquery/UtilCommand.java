@@ -7,46 +7,48 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.luzi82.nagatoquery.NqExec.CommandHandler;
+
 public class UtilCommand {
 
-	public static void cmd_trace(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aText) {
-		aListener.commandTrace(aText);
-		aListener.commandReturn(null);
+	public static void cmd_trace(CommandHandler aCommandHandler, String aText) {
+		aCommandHandler.mCommandListener.commandTrace(aText);
+		aCommandHandler.mCommandListener.commandReturn(null);
 	}
 
-	public static void cmd_set(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aVarId, String aValue) {
-		aQuery.setVar(aVarId, aValue);
-		aListener.commandReturn(null);
+	public static void cmd_set(CommandHandler aCommandHandler, String aVarId, String aValue) {
+		aCommandHandler.mNagatoQuery.setVar(aVarId, aValue);
+		aCommandHandler.mCommandListener.commandReturn(null);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void cmd_lsvar(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
+	public static void cmd_lsvar(CommandHandler aCommandHandler) {
 		Map.Entry<String, String>[] varList;
-		varList = aQuery.mVarTree.entrySet().toArray(new Map.Entry[0]);
+		varList = aCommandHandler.mNagatoQuery.mVarTree.entrySet().toArray(new Map.Entry[0]);
 		sort(varList);
 		for (Map.Entry<String, String> me : varList) {
-			aListener.commandTrace("$" + me.getKey() + " = " + me.getValue());
+			aCommandHandler.mCommandListener.commandTrace("$" + me.getKey() + " = " + me.getValue());
 		}
-		varList = aQuery.mTmpVarTree.entrySet().toArray(new Map.Entry[0]);
+		varList = aCommandHandler.mNqSession.mVarTree.entrySet().toArray(new Map.Entry[0]);
 		sort(varList);
 		for (Map.Entry<String, String> me : varList) {
-			aListener.commandTrace("%" + me.getKey() + " = " + me.getValue());
+			aCommandHandler.mCommandListener.commandTrace("%" + me.getKey() + " = " + me.getValue());
 		}
-		aListener.commandReturn(null);
+		aCommandHandler.mCommandListener.commandReturn(null);
 	}
 
-	public static void cmd_help(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
-		String[] cmdList = aQuery.mCommandTree.keySet().toArray(new String[0]);
+	public static void cmd_help(CommandHandler aCommandHandler) {
+		String[] cmdList = aCommandHandler.mNagatoQuery.mCommandTree.keySet().toArray(new String[0]);
 		Arrays.sort(cmdList);
 		for (String cmd : cmdList) {
-			aListener.commandTrace(aQuery.methodFormat(cmd));
+			aCommandHandler.mCommandListener.commandTrace(aCommandHandler.mNagatoQuery.methodFormat(cmd));
 		}
-		aListener.commandReturn(null);
+		aCommandHandler.mCommandListener.commandReturn(null);
 	}
 
-	public static void cmd_now(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
+	public static void cmd_now(CommandHandler aCommandHandler) {
 		final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd-HHmmss");
-		aListener.commandReturn(FORMAT.format(new Date()));
+		aCommandHandler.mCommandListener.commandReturn(FORMAT.format(new Date()));
 	}
 
 	public static void sort(Map.Entry<String, String>[] aAry) {

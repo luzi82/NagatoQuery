@@ -7,19 +7,21 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.luzi82.nagatoquery.NqExec.CommandHandler;
+
 public class NagatoQueryTest {
 
-	public static void cmd_helloworld(NagatoQuery aQuery, NagatoQuery.CommandListener aListener) {
-		aListener.commandReturn("Hello World");
+	public static void cmd_helloworld(CommandHandler aHandler) {
+		aHandler.mCommandListener.commandReturn("Hello World");
 	}
 
-	public static class TestNq extends NagatoQuery implements NagatoQuery.CommandListener {
+	public static class TestSession extends NqSession implements NqSession.CommandListener {
 		public LinkedList<String> mCommnadReturnRecord = new LinkedList<String>();
 		public LinkedList<String> mCommnadTraceRecord = new LinkedList<String>();
 		public LinkedList<String> mCommnadErrorRecord = new LinkedList<String>();
 
-		public TestNq() {
-			super(Executors.newFixedThreadPool(1));
+		public TestSession() {
+			super(new NagatoQuery(Executors.newFixedThreadPool(1)));
 		}
 
 		@Override
@@ -46,78 +48,78 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testHelloWorld() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("helloworld", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("Hello World", nq.mCommnadReturnRecord.get(0));
 	}
 
-	public static void cmd_func_string(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, String aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	public static void cmd_func_string(CommandHandler aHandler, String aValue) {
+		aHandler.mCommandListener.commandReturn(getCurrentMethodName() + " " + aValue);
 	}
 
 	@Test
 	public void testArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_string asdf", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("cmd_func_string asdf", nq.mCommnadReturnRecord.get(0));
 	}
 
-	public static void cmd_func_inttype(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, int aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	public static void cmd_func_inttype(CommandHandler aHandler, int aValue) {
+		aHandler.mCommandListener.commandReturn(getCurrentMethodName() + " " + aValue);
 	}
 
 	@Test
 	public void testIntTypeArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_inttype 123", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("cmd_func_inttype 123", nq.mCommnadReturnRecord.get(0));
 	}
 
-	public static void cmd_func_intclass(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, Integer aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	public static void cmd_func_intclass(CommandHandler aHandler, Integer aValue) {
+		aHandler.mCommandListener.commandReturn(getCurrentMethodName() + " " + aValue);
 	}
 
 	@Test
 	public void testIntClassArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_intclass 123", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("cmd_func_intclass 123", nq.mCommnadReturnRecord.get(0));
 	}
 
-	public static void cmd_func_doubletype(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, double aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	public static void cmd_func_doubletype(CommandHandler aHandler, double aValue) {
+		aHandler.mCommandListener.commandReturn(getCurrentMethodName() + " " + aValue);
 	}
 
 	@Test
 	public void testDoubleTypeArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_doubletype 123", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
 		Assert.assertEquals("cmd_func_doubletype 123.0", nq.mCommnadReturnRecord.get(0));
 	}
 
-	public static void cmd_func_doubleclass(NagatoQuery aQuery, NagatoQuery.CommandListener aListener, Double aValue) {
-		aListener.commandReturn(getCurrentMethodName() + " " + aValue);
+	public static void cmd_func_doubleclass(CommandHandler aHandler, Double aValue) {
+		aHandler.mCommandListener.commandReturn(getCurrentMethodName() + " " + aValue);
 	}
 
 	@Test
 	public void testDoubleClassArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_doubleclass 123", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
@@ -126,8 +128,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testVar() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.setVar("$asdf", "qwer");
 		nq.execute("func_string $asdf", nq);
 		sleep(100);
@@ -137,8 +139,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testTmpVar() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.setVar("%asdf", "qwer");
 		nq.execute("func_string %asdf", nq);
 		sleep(100);
@@ -148,8 +150,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testVarRecursive() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.setVar("$v1", "v2");
 		nq.setVar("$v2", "v3");
 		nq.execute("func_string $$v1", nq);
@@ -160,8 +162,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testTempVarRecursive() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.setVar("%v1", "v2");
 		nq.setVar("%v2", "v3");
 		nq.execute("func_string %%v1", nq);
@@ -172,7 +174,7 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testCommandNotFound() {
-		TestNq nq = new TestNq();
+		TestSession nq = new TestSession();
 		nq.execute("not_exist", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());
@@ -182,8 +184,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testArgNumError() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 
 		nq.execute("func_string", nq);
 		sleep(100);
@@ -202,9 +204,9 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testRunnable() {
-		TestNq nq = new TestNq();
+		TestSession nq = new TestSession();
 		final int[] x = { 0 };
-		nq.mCommandTree.put("run", new Runnable() {
+		nq.mNagatoQuery.mCommandTree.put("run", new Runnable() {
 			@Override
 			public void run() {
 				x[0] = 1;
@@ -220,8 +222,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testRunnableArg() {
-		TestNq nq = new TestNq();
-		nq.mCommandTree.put("run", new Runnable() {
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.mCommandTree.put("run", new Runnable() {
 			@Override
 			public void run() {
 			}
@@ -235,8 +237,8 @@ public class NagatoQueryTest {
 
 	@Test
 	public void testBadArg() {
-		TestNq nq = new TestNq();
-		nq.loadClass(getClass());
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
 		nq.execute("func_inttype x", nq);
 		sleep(100);
 		Assert.assertEquals(1, nq.mCommnadErrorRecord.size());

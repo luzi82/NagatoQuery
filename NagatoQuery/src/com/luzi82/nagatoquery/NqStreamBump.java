@@ -10,17 +10,17 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 
-import com.luzi82.nagatoquery.NagatoQuery.CommandListener;
+import com.luzi82.nagatoquery.NqSession.CommandListener;
 
 public class NqStreamBump {
 	public final String mInputPrefix;
 	public final BufferedWriter mBufferedWriter;
 	public final BufferedReader mBufferedReader;
-	public final NagatoQuery mNagatoQuery;
+	public final NqSession mNqSession;
 
-	public NqStreamBump(NagatoQuery aNagatoQuery, InputStream aInputStream, OutputStream aOutputStream, String aInputPrefix) {
+	public NqStreamBump(NqSession aNqSession, InputStream aInputStream, OutputStream aOutputStream, String aInputPrefix) {
 		mInputPrefix = aInputPrefix;
-		mNagatoQuery = aNagatoQuery;
+		mNqSession = aNqSession;
 		try {
 			mBufferedWriter = new BufferedWriter(new OutputStreamWriter(aOutputStream, "UTF-8"));
 			mBufferedReader = new BufferedReader(new InputStreamReader(aInputStream, "UTF-8"));
@@ -37,7 +37,7 @@ public class NqStreamBump {
 					if (mInputPrefix != null)
 						output(mInputPrefix);
 					String line = mBufferedReader.readLine();
-					mNagatoQuery.execute(line, new CommandListener() {
+					mNqSession.execute(line, new CommandListener() {
 						@Override
 						public void commandTrace(String aMessage) {
 							output(aMessage + "\n");
@@ -58,37 +58,40 @@ public class NqStreamBump {
 						}
 					});
 				} catch (IOException e) {
-					throw new Error(e);
+					if (mExceptionHandler != null) {
+						mExceptionHandler.exception(e);
+					}
 				}
 			}
 		};
-		mNagatoQuery.mExecutor.execute(r);
+		mNqSession.mNagatoQuery.mExecutor.execute(r);
 	}
 
 	LinkedList<String> mOutputQueue = new LinkedList<String>();
 	Runnable mOutputDump = new Runnable() {
 		@Override
 		public void run() {
-			while (true) {
-				String out = null;
-				synchronized (mOutputQueue) {
-					if (mOutputQueue.isEmpty()) {
-						mOutputDumpBusy = false;
-						return;
+			try {
+				while (true) {
+					String out = null;
+					synchronized (mOutputQueue) {
+						if (mOutputQueue.isEmpty()) {
+							mOutputDumpBusy = false;
+							return;
+						}
+						out = mOutputQueue.removeFirst();
 					}
-					out = mOutputQueue.removeFirst();
-				}
-				try {
 					mBufferedWriter.write(out);
 					mBufferedWriter.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-					synchronized (mOutputQueue) {
-						mOutputDumpBusy = false;
-						mOutputDump = null;
-						return;
-					}
 				}
+			} catch (IOException e) {
+				synchronized (mOutputQueue) {
+					mOutputQueue.clear();
+					mOutputDumpBusy = false;
+					mOutputDump = null;
+				}
+				if (mExceptionHandler != null)
+					mExceptionHandler.exception(e);
 			}
 		}
 	};
@@ -101,9 +104,15 @@ public class NqStreamBump {
 			mOutputQueue.addLast(aMessage);
 			if (!mOutputDumpBusy) {
 				mOutputDumpBusy = true;
-				mNagatoQuery.mExecutor.execute(mOutputDump);
+				mNqSession.mNagatoQuery.mExecutor.execute(mOutputDump);
 			}
 		}
+	}
+
+	ExceptionHandler mExceptionHandler;
+
+	public void setExceptionHandler(ExceptionHandler aExceptionHandler) {
+		this.mExceptionHandler = aExceptionHandler;
 	}
 
 }
