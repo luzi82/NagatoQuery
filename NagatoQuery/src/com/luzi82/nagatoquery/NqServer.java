@@ -1,19 +1,17 @@
 package com.luzi82.nagatoquery;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.util.Iterator;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import com.luzi82.nagatoquery.NqSession.Listener;
 
 public class NqServer implements Runnable {
 
 	final NagatoQuery mNagatoQuery;
-	final int mPort;
 
-	Selector mSelector;
-	ServerSocketChannel mServerSocketChannel;
+	final int mPort;
+	ServerSocket mServerSocket;
 
 	boolean mRun = false;
 
@@ -24,36 +22,34 @@ public class NqServer implements Runnable {
 
 	@Override
 	public void run() {
+		mRun = true;
 		try {
-			mSelector = Selector.open();
-
-			mServerSocketChannel = ServerSocketChannel.open();
-			mServerSocketChannel.configureBlocking(false);
-			mServerSocketChannel.socket().bind(new InetSocketAddress(mPort));
-
-			mServerSocketChannel.register(mSelector, SelectionKey.OP_ACCEPT);
-
-			mRun = true;
+			mServerSocket = new ServerSocket(mPort);
 			while (mRun) {
-				mSelector.select(1000);
-
-				if (!mRun)
-					break;
-
-				Iterator<SelectionKey> ski = mSelector.selectedKeys().iterator();
-
-				while (ski.hasNext()) {
-					SelectionKey sk = (SelectionKey) ski.next();
-					ski.remove();
-					
-					if(sk.channel().getClass()==ServerSocketChannel.class){
-						
+				final Socket socket = mServerSocket.accept();
+				NqSession ns = new NqSession(mNagatoQuery);
+				ns.setListener(new Listener() {
+					@Override
+					public void onExit() {
+						mRun = false;
+						try {
+							socket.close();
+						} catch (IOException e) {
+							// ignore
+						}
 					}
+				});
+				NqStreamBump nsb = new NqStreamBump(ns, socket.getInputStream(), socket.getOutputStream(), "GOL> ");
+				nsb.setExceptionHandler(mExceptionHandler);
+				nsb.start();
+			}
+		} catch (Exception e) {
+			if (mRun) {
+				mRun = false;
+				if (mExceptionHandler != null) {
+					mExceptionHandler.exception(e);
 				}
 			}
-		} catch (IOException e) {
-			if (mExceptionHandler != null)
-				mExceptionHandler.exception(e);
 		}
 	}
 

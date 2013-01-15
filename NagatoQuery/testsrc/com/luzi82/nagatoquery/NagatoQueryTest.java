@@ -246,6 +246,17 @@ public class NagatoQueryTest {
 		Assert.assertEquals("bad arg: func_inttype (int)", nq.mCommnadErrorRecord.get(0));
 	}
 
+	@Test
+	public void testEmptyInput() {
+		TestSession nq = new TestSession();
+		nq.mNagatoQuery.loadClass(getClass());
+		nq.execute("", nq);
+		sleep(100);
+		Assert.assertEquals(0, nq.mCommnadErrorRecord.size());
+		Assert.assertEquals(1, nq.mCommnadReturnRecord.size());
+		Assert.assertEquals(null, nq.mCommnadReturnRecord.get(0));
+	}
+
 	public static void sleep(long aMs) {
 		try {
 			Thread.sleep(100);

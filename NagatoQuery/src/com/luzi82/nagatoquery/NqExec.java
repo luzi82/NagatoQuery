@@ -10,7 +10,7 @@ import com.luzi82.nagatoquery.NqLineParser.Unit;
 import com.luzi82.nagatoquery.NqLineParser.VarUnit;
 import com.luzi82.nagatoquery.NqSession.CommandListener;
 
-class NqExec implements Runnable {
+public class NqExec implements Runnable {
 	/**
 		 * 
 		 */
@@ -80,6 +80,10 @@ class NqExec implements Runnable {
 	}
 
 	public void execute(String[] aCommandToken) {
+		if (aCommandToken.length == 0) {
+			mCommandListener.commandReturn(null);
+			return;
+		}
 		String cmdName = aCommandToken[0];
 		Object cmdObject = mNagatoQuery.mCommandTree.get(cmdName);
 		String[] cmdArg = Arrays.copyOfRange(aCommandToken, 1, aCommandToken.length);

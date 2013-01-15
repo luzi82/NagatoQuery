@@ -15,12 +15,14 @@ public class NagatoQuery {
 
 	public final Map<String, String> mVarTree;
 	public final Map<String, Object> mCommandTree;
+	public final Map<String, Object> mObjTree;
 
 	public final Executor mExecutor;
 
 	public NagatoQuery(Executor aExecutor) {
 		mVarTree = new TreeMap<String, String>();
 		mCommandTree = new TreeMap<String, Object>();
+		mObjTree = new TreeMap<String, Object>();
 		mExecutor = aExecutor;
 	}
 
@@ -102,7 +104,11 @@ public class NagatoQuery {
 		NagatoQuery nq = new NagatoQuery(Executors.newCachedThreadPool());
 		nq.loadClass(UtilCommand.class);
 		nq.loadClass(NqSession.class);
-		NqSession ns = new NqSession(nq);
+		main(nq);
+	}
+
+	public static void main(NagatoQuery aNagatoQuery) {
+		NqSession ns = new NqSession(aNagatoQuery);
 		ns.setListener(new Listener() {
 			@Override
 			public void onExit() {
