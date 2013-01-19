@@ -39,10 +39,11 @@ public class NqServer implements Runnable {
 						}
 					}
 				});
-				NqStreamBump nsb = new NqStreamBump(ns, socket.getInputStream(), socket.getOutputStream(), "GOL> ");
+				NqStreamBump nsb = new NqStreamBump(ns, socket.getInputStream(), socket.getOutputStream());
 				nsb.setExceptionHandler(mExceptionHandler);
 				nsb.start();
 			}
+			mServerSocket = null;
 		} catch (Exception e) {
 			if (mRun) {
 				mRun = false;
@@ -55,6 +56,17 @@ public class NqServer implements Runnable {
 
 	public void start() {
 		mNagatoQuery.mExecutor.execute(this);
+	}
+
+	public void stop() {
+		mRun = false;
+		if (mServerSocket != null) {
+			try {
+				mServerSocket.close();
+			} catch (IOException e) {
+				// ignore
+			}
+		}
 	}
 
 	ExceptionHandler mExceptionHandler;

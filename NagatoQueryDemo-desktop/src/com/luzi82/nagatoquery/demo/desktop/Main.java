@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 
 import com.luzi82.nagatoquery.NagatoQuery;
 import com.luzi82.nagatoquery.NqSession;
+import com.luzi82.nagatoquery.NqStreamBump;
 import com.luzi82.nagatoquery.UtilCommand;
 import com.luzi82.nagatoquery.demo.GameOfLife;
 import com.luzi82.nagatoquery.demo.GolQuery;
@@ -33,6 +34,7 @@ public class Main {
 		nq.loadClass(UtilCommand.class);
 		nq.loadClass(NqSession.class);
 		GolQuery.initNq(nq, gol);
+		NqStreamBump.setDefaultPrefix(nq, "GOL> ");
 
 		NagatoQuery.main(nq);
 	}

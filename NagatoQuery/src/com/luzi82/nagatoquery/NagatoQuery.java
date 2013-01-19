@@ -77,6 +77,13 @@ public class NagatoQuery {
 		}
 	}
 
+	public String getVar(String aKey) {
+		if (aKey.startsWith("$")) {
+			return mVarTree.get(aKey.substring(1));
+		}
+		return null;
+	}
+
 	public String methodFormat(String aCommandName) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(aCommandName);
@@ -104,6 +111,7 @@ public class NagatoQuery {
 		NagatoQuery nq = new NagatoQuery(Executors.newCachedThreadPool());
 		nq.loadClass(UtilCommand.class);
 		nq.loadClass(NqSession.class);
+		NqStreamBump.setDefaultPrefix(nq, "YUKI.N> ");
 		main(nq);
 	}
 
@@ -115,7 +123,7 @@ public class NagatoQuery {
 				System.exit(0);
 			}
 		});
-		NqStreamBump nsb = new NqStreamBump(ns, System.in, System.out, "YUKI.N> ");
+		NqStreamBump nsb = new NqStreamBump(ns, System.in, System.out);
 		nsb.start();
 	}
 

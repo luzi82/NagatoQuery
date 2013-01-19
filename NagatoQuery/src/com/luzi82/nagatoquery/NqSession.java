@@ -43,6 +43,14 @@ public class NqSession {
 		}
 	}
 
+	public String getVar(String aKey) {
+		if (aKey.startsWith("%")) {
+			return mVarTree.get(aKey.substring(1));
+		} else {
+			return mNagatoQuery.getVar(aKey);
+		}
+	}
+
 	public interface Listener {
 		public void onExit();
 	}

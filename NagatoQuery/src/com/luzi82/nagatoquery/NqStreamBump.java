@@ -13,13 +13,13 @@ import java.util.LinkedList;
 import com.luzi82.nagatoquery.NqSession.CommandListener;
 
 public class NqStreamBump {
-	public final String mInputPrefix;
+	public static final String[] INPUT_PREFIX_KEY_V = { "%SHELL_PREFIX", "$SHELL_PREFIX" };
+
 	public final BufferedWriter mBufferedWriter;
 	public final BufferedReader mBufferedReader;
 	public final NqSession mNqSession;
 
-	public NqStreamBump(NqSession aNqSession, InputStream aInputStream, OutputStream aOutputStream, String aInputPrefix) {
-		mInputPrefix = aInputPrefix;
+	public NqStreamBump(NqSession aNqSession, InputStream aInputStream, OutputStream aOutputStream) {
 		mNqSession = aNqSession;
 		try {
 			mBufferedWriter = new BufferedWriter(new OutputStreamWriter(aOutputStream, "UTF-8"));
@@ -34,8 +34,14 @@ public class NqStreamBump {
 			@Override
 			public void run() {
 				try {
-					if (mInputPrefix != null)
-						output(mInputPrefix);
+					for (String key : INPUT_PREFIX_KEY_V) {
+						String inputPrefix = null;
+						inputPrefix = mNqSession.getVar(key);
+						if (inputPrefix != null) {
+							output(inputPrefix);
+							break;
+						}
+					}
 					String line = mBufferedReader.readLine();
 					mNqSession.execute(line, new CommandListener() {
 						@Override
@@ -113,6 +119,10 @@ public class NqStreamBump {
 
 	public void setExceptionHandler(ExceptionHandler aExceptionHandler) {
 		this.mExceptionHandler = aExceptionHandler;
+	}
+
+	public static void setDefaultPrefix(NagatoQuery aNagatoQuery, String aPrefix) {
+		aNagatoQuery.setVar(NqStreamBump.INPUT_PREFIX_KEY_V[NqStreamBump.INPUT_PREFIX_KEY_V.length - 1], aPrefix);
 	}
 
 }
