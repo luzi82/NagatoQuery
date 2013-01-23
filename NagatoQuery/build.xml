@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Nagato Query" default="jar" basedir=".">
+    
+	<property name="src.dir" value="src" />
+	<property name="test.src.dir" value="testsrc" />
+	<property name="build.dir" value="build" />
+	<property name="classes.dir" value="${build.dir}/classes" />
+	<property name="test.classes.dir" value="${build.dir}/test/classes" />
+	<property name="jar.file" value="${build.dir}/NagatoQuery.jar" />
+	<property name="main.class" value="com.luzi82.nagatoquery.NagatoQuery" />
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+	<target name="compile">
+		<mkdir dir="${classes.dir}" />
+		<javac srcdir="src" destdir="${classes.dir}" includeantruntime="false" />
+	</target>
+	<target name="jar" depends="compile">
+		<jar jarfile="${jar.file}" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main.class}" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="compiletest" depends="compile">
+		<mkdir dir="${test.classes.dir}" />
+		<javac srcdir="${test.src.dir}" destdir="${test.classes.dir}" includeantruntime="false">
+		    <classpath>
+		        <pathelement location="${junit4.jar}"/>
+		        <pathelement location="${classes.dir}"/>
+		    </classpath>
+	    </javac>
+	</target>
+	<target name="test" depends="compiletest">
+	    <junit printsummary="yes" haltonfailure="yes">
+		    <classpath>
+		        <pathelement location="${junit4.jar}"/>
+     	        <pathelement location="${classes.dir}"/>
+		        <pathelement location="${test.classes.dir}"/>
+		    </classpath>
+		    <batchtest>
+		        <fileset dir="testsrc">
+		            <include name="**/*Test.java"/>
+		        </fileset>
+		    </batchtest>
+	    </junit>
+	</target>
+	
+	<target name="jenkins" depends="test,jar" />
+	
+</project>
