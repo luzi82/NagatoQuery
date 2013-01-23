@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Nagato Query" default="jar" basedir=".">
+	<target name="jenkins">
+		<ant dir="NagatoQuery" target="jenkins"/>
+	</target>
+</project>
+
