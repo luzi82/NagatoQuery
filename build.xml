@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Nagato Query" default="jar" basedir=".">
-	<target name="jenkins">
-		<ant dir="NagatoQuery" target="jenkins"/>
+	<target name="jar">
+		<ant dir="NagatoQuery" target="jar"/>
+	</target>
+
+	<target name="clean">
+		<ant dir="NagatoQuery" target="clean"/>
+	</target>
+
+	<target name="jenkins" depends="clean">
+		<ant dir="NagatoQuery" target="test"/>
+		<ant dir="NagatoQuery" target="jar"/>
 	</target>
 </project>
 

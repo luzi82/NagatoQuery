@@ -48,6 +48,4 @@
 	    </junit>
 	</target>
 	
-	<target name="jenkins" depends="test,jar" />
-	
 </project>
