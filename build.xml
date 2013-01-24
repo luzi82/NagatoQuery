@@ -8,9 +8,14 @@
 		<ant dir="NagatoQuery" target="clean"/>
 	</target>
 
-	<target name="jenkins" depends="clean">
+	<target name="test">
 		<ant dir="NagatoQuery" target="test"/>
-		<ant dir="NagatoQuery" target="jar"/>
+	</target>
+
+	<target name="ci">
+		<ant dir="." target="clean"/>
+		<ant dir="." target="test"/>
+		<ant dir="." target="jar"/>
 	</target>
 </project>
 
