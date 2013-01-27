@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Nagato Query" default="output" basedir=".">
+<project name="Nagato Query Demo" default="output" basedir=".">
     
     <import file="../build.common.xml" />
 
