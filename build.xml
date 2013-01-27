@@ -1,21 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Nagato Query" default="jar" basedir=".">
-	<target name="jar">
-		<ant dir="NagatoQuery" target="jar"/>
+<project name="Nagato Query" default="output" basedir=".">
+
+	<property file="${user.home}/.ant/user.properties" />
+
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="${ant-contrib.jar}"/>
+		</classpath>
+	</taskdef>
+
+	<macrodef name="forallsubant">
+		<attribute name="target"/>
+		<sequential>
+			<subant target="@{target}">
+				<fileset dir="." includes="*/build.xml"/>
+			</subant>
+		</sequential>
+	</macrodef>
+
+	<target name="output">
+		<forallsubant target="output" />
+		<mkdir dir="output" />
+		<for param="dir">
+			<dirset dir=".">
+				<include name="*/output" />
+				<exclude name="output" />
+				<exclude name="output/**" />
+			</dirset>
+			<sequential>
+				<copy todir="output">
+					<fileset dir="@{dir}"/>
+				</copy>
+			</sequential>
+		</for>
 	</target>
 
 	<target name="clean">
-		<ant dir="NagatoQuery" target="clean"/>
+		<forallsubant target="clean" />
+		<delete dir="output" />
 	</target>
 
 	<target name="test">
-		<ant dir="NagatoQuery" target="test"/>
+		<forallsubant target="test" />
 	</target>
 
 	<target name="ci">
 		<ant dir="." target="clean"/>
 		<ant dir="." target="test"/>
-		<ant dir="." target="jar"/>
+		<ant dir="." target="output"/>
 	</target>
 </project>
 

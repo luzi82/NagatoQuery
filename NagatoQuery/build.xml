@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Nagato Query" default="jar" basedir=".">
     
+    <property file="${user.home}/.ant/user.properties" />
+
 	<property name="src.dir" value="src" />
 	<property name="test.src.dir" value="testsrc" />
 	<property name="build.dir" value="build" />
+	<property name="output.dir" value="output" />
 	<property name="classes.dir" value="${build.dir}/classes" />
 	<property name="test.classes.dir" value="${build.dir}/test/classes" />
 	<property name="jar.file" value="${build.dir}/NagatoQuery.jar" />
@@ -11,6 +14,7 @@
 
 	<target name="clean">
 		<delete dir="${build.dir}" />
+		<delete dir="${output.dir}" />
 	</target>
 	<target name="compile">
 		<mkdir dir="${classes.dir}" />
@@ -22,6 +26,10 @@
 				<attribute name="Main-Class" value="${main.class}" />
 			</manifest>
 		</jar>
+	</target>
+	<target name="output" depends="jar">
+		<mkdir dir="${output.dir}" />
+		<copy file="${jar.file}" todir="${output.dir}" />
 	</target>
 	
 	<target name="compiletest" depends="compile">
