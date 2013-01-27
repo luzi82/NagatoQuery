@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Nagato Query" default="output" basedir=".">
     
-    <property file="${user.home}/.ant/user.properties" />
+    <import file="../build.common.xml" />
 
 	<property name="src.dir" value="src" />
 	<!-- <property name="test.src.dir" value="testsrc" />  -->
@@ -11,9 +11,6 @@
 	<property name="test.classes.dir" value="${build.dir}/test/classes" />
 	<property name="jar.file" value="${build.dir}/NagatoQueryDemo.jar" />
 	<property name="main.class" value="com.luzi82.nagatoquery.demo.desktop.Main" />
-
-	<property name="nq.src.dir" value="../NagatoQuery/src" />
-	<property name="democommon.src.dir" value="../NagatoQueryDemo-common/src" />
 
 	<target name="clean">
 		<delete dir="${build.dir}" />
@@ -26,6 +23,7 @@
 	<target name="jar" depends="compile">
 		<jar jarfile="${jar.file}" basedir="${classes.dir}">
 			<manifest>
+				<attribute name="Manifest-Version" value="${nq.full.version}" />
 				<attribute name="Main-Class" value="${main.class}" />
 			</manifest>
 		</jar>

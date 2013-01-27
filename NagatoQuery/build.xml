@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Nagato Query" default="output" basedir=".">
     
-    <property file="${user.home}/.ant/user.properties" />
+    <import file="../build.common.xml" />
 
 	<property name="src.dir" value="src" />
 	<property name="test.src.dir" value="testsrc" />
