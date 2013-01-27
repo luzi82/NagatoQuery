@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Nagato Query" default="jar" basedir=".">
+<project name="Nagato Query" default="output" basedir=".">
     
     <property file="${user.home}/.ant/user.properties" />
 
