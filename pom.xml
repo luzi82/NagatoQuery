@@ -6,8 +6,8 @@
 	<artifactId>nagato-query</artifactId>
 	<version>0.0.0.alpha.0.master</version>
 	
-	<name>Nagato Query</name>
-	<url>http://www.luzi82.com/~ci/maven-site/${project.name}/${project.version}/</url>
+	<name>NagatoQuery</name>
+	<url>http://www.luzi82.com/~ci/maven-site/NagatoQuery/${project.version}/</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
