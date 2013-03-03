@@ -3,8 +3,7 @@ package com.luzi82.nagatoquery;
 import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.luzi82.nagatoquery.NqExec.CommandHandler;
