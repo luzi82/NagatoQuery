@@ -17,6 +17,7 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>nagato-query-lib</module>
+		<module>nagato-query-demo-common</module>
 	</modules>
 
 	<licenses>
