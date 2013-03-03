@@ -15,7 +15,7 @@ import com.luzi82.nagatoquery.demo.GolQuery;
 public class Main {
 
 	/**
-	 * @param args
+	 * @param argv
 	 */
 	public static void main(String[] argv) {
 		final Executor executor = Executors.newCachedThreadPool();
