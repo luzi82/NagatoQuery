@@ -6,14 +6,18 @@
 		<artifactId>nagato-query</artifactId>
 		<version>0.0.0.alpha.0.master</version>
 	</parent>
-	<artifactId>nagato-query-demo-common</artifactId>
-
-	<name>NagatoQuery Demo Common</name>
+	<artifactId>nagato-query-demo-desktop</artifactId>
+	<name>NagatoQuery demo (desktop)</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.luzi82.nagatoquery</groupId>
 			<artifactId>nagato-query-lib</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.luzi82.nagatoquery</groupId>
+			<artifactId>nagato-query-demo-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

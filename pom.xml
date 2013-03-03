@@ -18,6 +18,7 @@
 	<modules>
 		<module>nagato-query-lib</module>
 		<module>nagato-query-demo-common</module>
+		<module>nagato-query-demo-desktop</module>
 	</modules>
 
 	<licenses>
@@ -41,6 +42,15 @@
 			<email>luzi82@gmail.com</email>
 		</developer>
 	</developers>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
