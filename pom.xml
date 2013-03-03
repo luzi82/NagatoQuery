@@ -124,7 +124,7 @@
 		</repository>
 		<site>
 			<id>main-site</id>
-			<url>scpexe://ci@www.luzi82.com/home/ci/public_html/maven-site/${project.name}/${project.version}</url>
+			<url>scpexe://ci@www.luzi82.com/home/ci/public_html/maven-site/NagatoQuery/${project.version}</url>
 		</site>
 	</distributionManagement>
 
