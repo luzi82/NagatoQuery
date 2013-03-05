@@ -4,16 +4,23 @@
 	
 	<groupId>com.luzi82.nagatoquery</groupId>
 	<artifactId>nagato-query</artifactId>
-	<version>0.0.0.alpha.0.master</version>
+	<version>0.0.0-SNAPSHOT</version>
 	
 	<name>NagatoQuery</name>
+	<description>Backdoor console</description>
 	<url>http://www.luzi82.com/~ci/maven-site/NagatoQuery/${project.version}/</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.ciManagement.url>http://ci.luzi82.com:8080/job/NagatoQuery%20master/</project.ciManagement.url>
 	</properties>
 
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 	<packaging>pom</packaging>
 	<modules>
 		<module>nagato-query-lib</module>
@@ -117,17 +124,6 @@
 		</extensions>
 	</build>
 
-	<distributionManagement>
-		<repository>
-			<id>main-repo</id>
-			<url>scpexe://ci@www.luzi82.com/home/ci/public_html/maven-repo</url>
-		</repository>
-		<site>
-			<id>main-site</id>
-			<url>scpexe://ci@www.luzi82.com/home/ci/public_html/maven-site/NagatoQuery/${project.version}</url>
-		</site>
-	</distributionManagement>
-
 	<reporting>
 		<plugins>
 			<plugin>
@@ -145,5 +141,17 @@
 			</plugin>
 		</plugins>
 	</reporting>
+
+	<distributionManagement>
+		<site>
+			<id>main-site</id>
+			<url>scpexe://ci@www.luzi82.com/home/ci/public_html/maven-site/NagatoQuery/${project.version}</url>
+		</site>
+	</distributionManagement>
+
+	<ciManagement>
+		<system>Jenkins</system>
+		<url>${project.ciManagement.url}</url>
+	</ciManagement>
 
 </project>

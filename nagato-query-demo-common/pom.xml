@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.luzi82.nagatoquery</groupId>
 		<artifactId>nagato-query</artifactId>
-		<version>0.0.0.alpha.0.master</version>
+		<version>0.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>nagato-query-demo-common</artifactId>
 
