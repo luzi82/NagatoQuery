@@ -7,6 +7,7 @@
 	</parent>
 	<artifactId>nagato-query-demo-desktop</artifactId>
 	<name>NagatoQuery Desktop Demo</name>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>

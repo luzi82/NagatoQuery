@@ -8,5 +8,6 @@
 	<artifactId>nagato-query-lib</artifactId>
 
 	<name>LibNagatoQuery</name>
+	<packaging>jar</packaging>
 
 </project>
