@@ -1,10 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>com.luzi82.nagatoquery</groupId>
 	<artifactId>nagato-query</artifactId>
 	<version>0.0.5-SNAPSHOT</version>
-	
+
 	<name>NagatoQuery</name>
 	<description>Backdoor console</description>
 	<url>http://www.luzi82.com/~ci/maven-site/NagatoQuery/${project.version}/</url>
@@ -121,6 +122,16 @@
 				<version>2.4</version>
 			</extension>
 		</extensions>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-release-plugin</artifactId>
+					<configuration>
+						<preparationGoals>clean install</preparationGoals>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<reporting>
@@ -152,5 +163,5 @@
 		<system>Jenkins</system>
 		<url>${project.ciManagement.url}</url>
 	</ciManagement>
-	
+
 </project>
