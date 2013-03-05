@@ -3,7 +3,7 @@
 	
 	<groupId>com.luzi82.nagatoquery</groupId>
 	<artifactId>nagato-query</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.4</version>
 	
 	<name>NagatoQuery</name>
 	<description>Backdoor console</description>
@@ -152,5 +152,5 @@
 		<system>Jenkins</system>
 		<url>${project.ciManagement.url}</url>
 	</ciManagement>
-
+	
 </project>
