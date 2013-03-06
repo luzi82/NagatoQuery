@@ -3,7 +3,7 @@
 
 	<groupId>com.luzi82.nagatoquery</groupId>
 	<artifactId>nagato-query</artifactId>
-	<version>0.0.7-SNAPSHOT</version>
+	<version>0.0.7</version>
 
 	<name>NagatoQuery</name>
 	<description>Backdoor console</description>
